@@ -67,7 +67,7 @@ def rental_days(from_date, to_date):
 
 def dates_overlap(start_a, end_a, start_b, end_b):
     """True if date range A overlaps date range B."""
-    return start_b <= start_a <= end_b
+    return start_a <= end_b and end_a >= start_b
 
 
 def find_conflicting_booking(equipment_id, from_date, to_date, bookings):
@@ -98,7 +98,11 @@ def index():
 
 @app.route("/api/equipment")
 def list_equipment():
+    # Only return items where the status is NOT 'maintenance'
+    #available_equipment = [item for item in EQUIPMENT if item["status"] != "maintenance"]
+    #return jsonify(available_equipment)
     return jsonify(EQUIPMENT)
+
 
 
 @app.route("/api/bookings")
@@ -127,6 +131,9 @@ def create_booking():
     equipment = get_equipment(data.get("equipment_id"))
     if equipment is None:
         return jsonify({"error": "Unknown equipment"}), 400
+    
+    if equipment["status"] == "maintenance":
+        return jsonify({"error": "Selected equipment is currently under maintenance"}), 400
 
     from_date = parse_date(data["from_date"])
     to_date = parse_date(data["to_date"])

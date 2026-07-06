@@ -59,9 +59,19 @@
     }
 
     function dayCount(from, to) {
-      // Rentals are billed inclusively: both start and end day count.
-      const ms = new Date(to) - new Date(from);
-      return Math.round(ms / (1000 * 60 * 60 * 24)) + 1;
+      // 1. Create native date objects
+      const dateFrom = new Date(from);
+      const dateTo = new Date(to);
+
+      // 2. Convert both to pure UTC midnights to ignore local timezone shifts
+      const utcFrom = Date.UTC(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
+      const utcTo = Date.UTC(dateTo.getFullYear(), dateTo.getMonth(), dateTo.getDate());
+
+      // 3. Calculate absolute millisecond difference
+      const ms = utcTo - utcFrom;
+
+      // 4. Convert to days and add 1 for inclusive billing
+      return Math.floor(ms / (1000 * 60 * 60 * 24)) + 1;
     }
 
     function updateTotal() {
@@ -113,6 +123,7 @@
 
     document.getElementById("equipment").addEventListener("change", updateTotal);
     document.getElementById("from").addEventListener("change", updateTotal);
+    document.getElementById("to").addEventListener("change", updateTotal);
     document.getElementById("book").addEventListener("click", createBooking);
 
     loadEquipment();
